@@ -12,10 +12,7 @@ import { selectUser } from 'store/selectors/authentication';
 import { PopupActions } from 'store/actions/popup';
 import TokenNumberInput from 'components/TokenNumberInput';
 import PopupTheme from '../Popup/PopupTheme';
-import Routes from 'constants/Routes';
 import Input from '../Input';
-import useCurrentUser from 'hooks/useCurrentUser';
-import TokenSlider from 'components/TokenSlider';
 import { round, ceil } from 'lodash/math';
 import _ from 'lodash';
 
@@ -28,11 +25,10 @@ const PlaceBet = () => {
   const isGameRunning = useSelector(selectHasStarted);
   const userPlacedABet = useSelector(selectUserBet);
   const [amount, setAmount] = useState(sliderMinAmount);
-  const [crashFactor, setCrashFactor] = useState(1);
+  const [crashFactor, setCrashFactor] = useState(11);
   const [showCashoutWarning, setShowCashoutWarning] = useState(false);
   const [crashFactorDirty, setCrashFactorDirty] = useState(false);
-  const userUnableToBet =
-    isGameRunning || userPlacedABet || amount < 1 || crashFactor < 1;
+  const userUnableToBet = userPlacedABet || amount < 1;
 
   const onTokenNumberChange = number => {
     console.log(number);
@@ -82,6 +78,17 @@ const PlaceBet = () => {
       });
   };
 
+  const cashOut = () => {
+    dispatch(RosiGameActions.cashOut());
+    Api.cashOut()
+      .then(response => {
+        AlertActions.showSuccess(JSON.stringify(response));
+      })
+      .catch(error => {
+        dispatch(AlertActions.showError(error.message));
+      });
+  };
+
   const showLoginPopup = () => {
     dispatch(
       PopupActions.show({
@@ -110,67 +117,80 @@ const PlaceBet = () => {
           />
         </div>
       </div>
-      <div className={styles.inputContainer}>
-        <label
-          className={classNames(
-            styles.label,
-            showCashoutWarning ? styles.warning : null
-          )}
+      {/*<div className={styles.inputContainer}>*/}
+      {/*  <label*/}
+      {/*    className={classNames(*/}
+      {/*      styles.label,*/}
+      {/*      showCashoutWarning ? styles.warning : null*/}
+      {/*    )}*/}
+      {/*  >*/}
+      {/*    Auto Cashout at*/}
+      {/*  </label>*/}
+      {/*  <div*/}
+      {/*    className={classNames(*/}
+      {/*      styles.cashedOutInputContainer,*/}
+      {/*      showCashoutWarning ? styles.warning : null*/}
+      {/*    )}*/}
+      {/*  >*/}
+      {/*    <Input*/}
+      {/*      className={styles.input}*/}
+      {/*      type={'number'}*/}
+      {/*      value={!crashFactorDirty ? '1.00' : crashFactor}*/}
+      {/*      onChange={onCrashFactorChange}*/}
+      {/*      step={0.01}*/}
+      {/*      min="1"*/}
+      {/*      disabled={!user.isLoggedIn}*/}
+      {/*    />*/}
+      {/*    <span className={styles.eventTokenLabel}>*/}
+      {/*      <span>X</span>*/}
+      {/*    </span>*/}
+      {/*  </div>*/}
+      {/*  {showCashoutWarning ? (*/}
+      {/*    <div className={styles.error}>*/}
+      {/*      <span>Betting less than 1 is not recommended. </span>*/}
+      {/*      <span*/}
+      {/*        data-for="rt"*/}
+      {/*        className={styles.why}*/}
+      {/*        data-tip="The multiplying factor defines your final reward.<br/>*/}
+      {/*       A multiplier of 2x means twice the reward, when the game ends.<br/>*/}
+      {/*        If the game ends before your multiplier,<br/> your amount invested is lost.<br/>"*/}
+      {/*      >*/}
+      {/*        Understand why.*/}
+      {/*      </span>*/}
+      {/*    </div>*/}
+      {/*  ) : null}*/}
+      {/*  <ReactTooltip*/}
+      {/*    id={'rt'}*/}
+      {/*    place="top"*/}
+      {/*    effect="solid"*/}
+      {/*    offset={{ bottom: 10 }}*/}
+      {/*    multiline*/}
+      {/*    className={styles.tooltip}*/}
+      {/*  />*/}
+      {/*</div>*/}
+      {!userPlacedABet ? (
+        <span
+          role="button"
+          tabIndex="0"
+          className={classNames(styles.button, {
+            [styles.buttonDisabled]: userUnableToBet,
+          })}
+          onClick={user.isLoggedIn ? placeABet : showLoginPopup}
         >
-          Auto Cashout at
-        </label>
-        <div
-          className={classNames(
-            styles.cashedOutInputContainer,
-            showCashoutWarning ? styles.warning : null
-          )}
+          {user.isLoggedIn ? 'Place Bet' : 'Join To Start Betting'}
+        </span>
+      ) : (
+        <span
+          role="button"
+          tabIndex="0"
+          className={classNames(styles.button, {
+            [styles.buttonDisabled]: !userPlacedABet || !isGameRunning,
+          })}
+          onClick={cashOut}
         >
-          <Input
-            className={styles.input}
-            type={'number'}
-            value={!crashFactorDirty ? '1.00' : crashFactor}
-            onChange={onCrashFactorChange}
-            step={0.01}
-            min="1"
-            disabled={!user.isLoggedIn}
-          />
-          <span className={styles.eventTokenLabel}>
-            <span>X</span>
-          </span>
-        </div>
-        {showCashoutWarning ? (
-          <div className={styles.error}>
-            <span>Betting less than 1 is not recommended. </span>
-            <span
-              data-for="rt"
-              className={styles.why}
-              data-tip="The multiplying factor defines your final reward.<br/>
-             A multiplier of 2x means twice the reward, when the game ends.<br/>
-              If the game ends before your multiplier,<br/> your amount invested is lost.<br/>"
-            >
-              Understand why.
-            </span>
-          </div>
-        ) : null}
-        <ReactTooltip
-          id={'rt'}
-          place="top"
-          effect="solid"
-          offset={{ bottom: 10 }}
-          multiline
-          className={styles.tooltip}
-        />
-      </div>
-      <span
-        role="button"
-        tabIndex="0"
-        className={classNames(styles.button, {
-          [styles.buttonDisabled]: userUnableToBet,
-        })}
-        onClick={user.isLoggedIn ? placeABet : showLoginPopup}
-      >
-        {user.isLoggedIn ? 'Place Bet' : 'Join To Start Betting'}
-      </span>
+          Cash Out
+        </span>
+      )}
     </div>
   );
 };
