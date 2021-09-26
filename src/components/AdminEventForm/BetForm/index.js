@@ -95,6 +95,7 @@ const BetForm = ({ setBetData, styles }) => {
           ampm={false}
         />
       </FormGroup>
+      {/* test */}
     </div>
   );
 };
