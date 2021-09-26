@@ -7,6 +7,7 @@ const initialState = {
   cashedOut: [],
   userBet: null,
   timeStarted: null,
+  isCashedOut: false,
 };
 
 const initializeState = (action, state) => {
@@ -43,6 +44,7 @@ const addLastCrash = (action, state) => {
       ),
     ].map(bet => ({ ...bet, amount: bet.amount * bet.crashFactor })),
     inGameBets: [],
+    isCashedOut: false,
   };
 };
 
@@ -74,6 +76,14 @@ const resetCashedOut = (action, state) => {
   };
 };
 
+const cashedOut = (action, state) => {
+  return {
+    ...state,
+    isCashedOut: true,
+    userBet: null,
+  };
+};
+
 export default function (state = initialState, action) {
   switch (action.type) {
     case RosiGameTypes.INITIALIZE_STATE:
@@ -92,6 +102,8 @@ export default function (state = initialState, action) {
       return addCashedOut(action, state);
     case RosiGameTypes.RESET_CASHED_OUT:
       return resetCashedOut(action, state);
+    case RosiGameTypes.CASH_OUT:
+      return cashedOut(action, state);
     default:
       return state;
   }

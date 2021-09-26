@@ -102,22 +102,6 @@ const BetForm = ({ setBetData, styles }) => {
           ampm={false}
         />
       </FormGroup>
-      <FormGroup className={styles.inputContainer}>
-        <InputLabel>Evidence Description</InputLabel>
-        <Input
-          type="text"
-          value={evidenceDescription}
-          onChange={updateValue('evidenceDescription')}
-        />
-      </FormGroup>
-      <FormGroup className={styles.inputContainer}>
-        <InputLabel>Evidence Source</InputLabel>
-        <Input
-          type="text"
-          value={evidenceSource}
-          onChange={updateValue('evidenceSource')}
-        />
-      </FormGroup>
     </div>
   );
 };
